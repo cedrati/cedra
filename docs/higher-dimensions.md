@@ -75,8 +75,33 @@ Theorem D guarantees convergence, not speed. We measure the $L^2$ star discrepan
 
 R2 comes from a cubic field, so the pair is provably badly approximable (Perron, Cassels). That explains why it wins. The Cedra pair is transcendental, so, like almost every pair (Khintchine), it is expected *not* to be badly approximable, though this is not proven.
 
+## Littlewood products
+
+The **Littlewood conjecture** (1930s, open) states that for every pair $(a, b)$,
+$$\inf_{n \ge 1}\ n\,\lVert na\rVert\,\lVert nb\rVert = 0.$$
+It is known for almost every pair (Gallagher), the possible exceptions form a set of Hausdorff dimension 0 (Einsiedler, Katok, Lindenstrauss), and it holds automatically when $a$ or $b$ is not badly approximable. Explicit pairs for which it is proven are rare (de Mathan, Adamczewski–Bugeaud).
+
+For the Cedra pair $a = \ln C_1$, $b = \ln\lvert C_2\rvert$, the conjecture would follow from the unboundedness of the partial quotients of $\ln C$, which is expected but not known. What can be done is to exhibit explicit witnesses. For $n = q_k$, a convergent denominator of $a$,
+$$q_k \lVert q_k a\rVert\, \lVert q_k b\rVert \;<\; \frac{\lVert q_k b\rVert}{a_{k+1}} \;\le\; \frac{1}{2\,a_{k+1}},$$
+so every large partial quotient produces a small Littlewood product.
+
+**Brute force** up to $n = 10^7$: the best value for the Cedra pair is already reached at $n = 47$ ($2.1 \times 10^{-3}$, thanks to $a_8 = 29$), and nothing better appears up to $10^7$. R2 reaches $1.2 \times 10^{-4}$ and $(\sqrt{2}, \sqrt{3})$ reaches $1.8 \times 10^{-3}$.
+
+**Along the convergents** (computed with 6 000 digits, so every value is certified):
+
+| $k$ | digits of $n = q_k$ | $n\,\lVert na\rVert\,\lVert nb\rVert$ | cause |
+|---|---|---|---|
+| 7 | 2 ($n = 47$) | $2.1 \times 10^{-3}$ | $a_8 = 29$ |
+| 30 | 14 | $2.6 \times 10^{-4}$ | |
+| 135 | 67 | $2.6 \times 10^{-5}$ | $a_{136} = 8\,388$ |
+| 748 | 379 | $1.5 \times 10^{-5}$ | |
+| 4090 | 2 117 | $\mathbf{1.5 \times 10^{-7}}$ | $a_{4091} = 73\,852$ |
+
+So there is an explicit integer $n$ with 2 117 digits such that $n\,\lVert n \ln C_1\rVert\,\lVert n \ln\lvert C_2\rvert\rVert < 1.5 \times 10^{-7}$. This is evidence for the conjecture on this pair, not a proof: a proof would need infinitely many such witnesses with values tending to 0. Reproduced by [`cedra_littlewood.py`](../cedra_littlewood.py).
+
 ## Conclusion
 
 - **Proven:** the Galois orbit of $C$ yields a 4-dimensional Kronecker sequence that is equidistributed, through a short argument combining the prime $167$ and Lindemann's theorem.
 - **Measured:** these point sets beat random sampling in 2D, but not standard low-discrepancy constructions (R2, Halton). In 4D, at N = 1500, they are at the level of random sampling.
+- **Explicit:** an integer with 2 117 digits gives a Littlewood product below $1.5 \times 10^{-7}$ for the Cedra pair, a certified witness in a direction where explicit examples are rare.
 - For practical quasi-Monte Carlo in several dimensions, use R2 or Halton/Sobol. The interest of the Cedra orbit is structural, not numerical.

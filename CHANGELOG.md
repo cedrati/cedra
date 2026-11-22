@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-11-22: Littlewood products
+
+### Added
+- `cedra_littlewood.py`: brute force Littlewood records and certified witnesses along the convergents of ln C; an integer with 2117 digits gives n ||n ln C1|| ||n ln|C2|| || < 1.5e-7.
+- `docs/higher-dimensions.md`: section on the Littlewood conjecture for the Cedra pair.
+- `docs/sturmian-sadic.md`: contrast with the 2025 Sturmian aperiodic tilings of Akiyama et al. (quadratic slopes only).
+- 2 new tests (36 total).
+
 ## 2026-11-22: higher dimensions and README overhaul
 
 ### Added
