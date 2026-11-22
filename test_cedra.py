@@ -4,7 +4,7 @@ from decimal import Decimal
 import random
 import unittest
 
-from cedra import (ALPHA_DEC, CEDRA_DEC, INV_PHI_DEC, MINIMAL_POLYNOMIAL,
+from cedra import (ALPHA_DEC, autocorrelation, bragg_intensity, fourier_bohr, sadic_word, substitution, CEDRA_DEC, INV_PHI_DEC, MINIMAL_POLYNOMIAL,
                    continued_fraction, convergent_denominators, distance_to_integer,
                    eval_poly, factor_complexity, frac, kronecker, mismatch_density,
                    mismatch_positions, model_set, star_discrepancy, window_word)
@@ -81,6 +81,47 @@ class TestNearPeriods(unittest.TestCase):
         # (q_k, first mismatch): q_{k+1} when q_k alpha - p_k > 0, else 1
         for q, first in ((5, 8), (8, 1), (13, 47), (47, 1), (1376, 1423), (1423, 1)):
             self.assertEqual(mismatch_positions(word, q)[0], first)
+
+
+class TestDiffraction(unittest.TestCase):
+    N = 50000
+
+    def test_bragg_peaks(self):
+        word, xs = window_word(self.N, INV_PHI_DEC), kronecker(self.N)
+        for j in (1, 2, 4):
+            measured = abs(fourier_bohr(word, xs, j=j)) ** 2
+            self.assertAlmostEqual(measured / bragg_intensity(j, INV_PHI_DEC), 1, delta=0.01)
+
+    def test_off_module_is_zero(self):
+        word = window_word(self.N, INV_PHI_DEC)
+        self.assertLess(abs(fourier_bohr(word, None, k=0.3)) ** 2, 1e-7)
+
+    def test_total_intensity_is_density(self):
+        tau = float(INV_PHI_DEC)
+        total = bragg_intensity(0) + 2 * sum(bragg_intensity(j) for j in range(1, 100001))
+        self.assertAlmostEqual(total, tau, delta=2e-6)
+
+    def test_autocorrelation(self):
+        word = window_word(self.N, ALPHA_DEC)
+        for m in (1, 13, 47):
+            measured = sum(word[i] and word[i + m] for i in range(self.N - m)) / (self.N - m)
+            self.assertAlmostEqual(measured, float(autocorrelation(m, ALPHA_DEC)), delta=2e-3)
+
+
+class TestSAdic(unittest.TestCase):
+    def test_fibonacci_substitution(self):
+        self.assertEqual(substitution(1, '10'), '101')
+        self.assertEqual(substitution(3, '10'), '11101')
+
+    def test_sturmian_word_is_sadic(self):
+        n = 100000
+        word = ''.join(map(str, window_word(n + 1, ALPHA_DEC)))
+        self.assertEqual(word, '0' + sadic_word(n))
+
+    def test_common_prefix_with_fibonacci(self):
+        c, fib = sadic_word(200), sadic_word(200, INV_PHI_DEC)
+        self.assertEqual(c[:32], fib[:32])
+        self.assertNotEqual(c[32], fib[32])
 
 
 class TestDiscrepancy(unittest.TestCase):

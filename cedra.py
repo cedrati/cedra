@@ -11,6 +11,7 @@ far beyond double precision (plain floats drift by ~1e-7 at n = 1e9).
 """
 
 from decimal import Decimal, ROUND_FLOOR, getcontext
+import cmath
 import math
 
 getcontext().prec = 60
@@ -108,6 +109,62 @@ def mismatch_density(q, window=INV_PHI_DEC, alpha=ALPHA_DEC):
 def mismatch_positions(word, q):
     """Indices n >= 1 (1-based, word[0] is n = 1) with w(n) != w(n + q)."""
     return [i + 1 for i in range(len(word) - q) if word[i] != word[i + q]]
+
+
+def autocorrelation(m, window=INV_PHI_DEC, alpha=ALPHA_DEC):
+    """Density of n with n and n + m both in the model set: tau - min(||m alpha||, tau, 1 - tau)."""
+    tau = Decimal(window)
+    return tau - min(distance_to_integer(m * Decimal(alpha)), tau, 1 - tau)
+
+
+def bragg_intensity(j, window=INV_PHI_DEC):
+    """Intensity of the Bragg peak at k = {j alpha}: |sin(pi j tau) / (pi j)|^2, and tau^2 for j = 0."""
+    tau = float(window)
+    if j == 0:
+        return tau * tau
+    return (math.sin(math.pi * j * tau) / (math.pi * j)) ** 2
+
+
+def fourier_bohr(word, fractions, j=None, k=None):
+    """
+    Fourier-Bohr coefficient (1/N) sum_{n in S, n <= N} exp(-2 i pi k n).
+
+    `fractions` are the values {n alpha} for n = 1..N. For k = j alpha the
+    phase is computed as j {n alpha}, which stays exact for large n.
+    """
+    total = 0j
+    if j is not None:
+        for x, bit in zip(fractions, word):
+            if bit:
+                total += cmath.exp(-2j * math.pi * j * x)
+    else:
+        for n, bit in enumerate(word, start=1):
+            if bit:
+                total += cmath.exp(-2j * math.pi * k * n)
+    return total / len(word)
+
+
+def substitution(a, word):
+    """sigma_a: 1 -> 1^a 0, 0 -> 1 (sigma_1 is the Fibonacci substitution)."""
+    one = '1' * a + '0'
+    return ''.join(one if c == '1' else '1' for c in word)
+
+
+def sadic_word(length, alpha=ALPHA_DEC):
+    """
+    Characteristic Sturmian word c_alpha of a slope 1/2 < alpha < 1 (a_1 = 1),
+    built as the S-adic limit sigma_{a_2} o sigma_{a_3} o ... o sigma_{a_k}(1).
+    """
+    cf = continued_fraction(alpha, 60)
+    if cf[1] != 1:
+        raise ValueError("this construction assumes a_1 = 1, i.e. 1/2 < alpha < 1")
+    for k in range(3, len(cf) + 1):
+        word = '1'
+        for a in reversed(cf[2:k]):
+            word = substitution(a, word)
+        if len(word) >= length:
+            return word[:length]
+    raise ValueError("not enough partial quotients for this length")
 
 
 def factor_complexity(word, k):

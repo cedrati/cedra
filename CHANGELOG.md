@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-11-22: diffraction and S-adic notes
+
+### Added
+- `docs/diffraction.md`: Theorem C, exact diffraction measure sum_j sin^2(pi j tau)/(pi j)^2 delta_{j alpha} with an elementary proof of pure point spectrum (autocorrelation, Fourier series, uniqueness on the circle).
+- `docs/sturmian-sadic.md`: S-adic form sigma_1^5 o sigma_3 o sigma_29 o ... (1), exact 32-letter agreement with the Fibonacci word, proofs that the word is neither a substitution fixed point nor automatic.
+- `cedra_diffraction.py`, `cedra_sadic.py`: numerical checks up to N = 10^6.
+- `cedra.py`: `autocorrelation`, `bragg_intensity`, `fourier_bohr`, `substitution`, `sadic_word`.
+- 7 new tests (28 total).
+
 ## 2026-11-22: near-periods note
 
 ### Added
