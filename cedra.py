@@ -99,6 +99,17 @@ def distance_to_integer(x):
     return min(f, 1 - f)
 
 
+def mismatch_density(q, window=INV_PHI_DEC, alpha=ALPHA_DEC):
+    """Theorem A: density of n with w(n) != w(n + q) is 2 min(||q alpha||, tau, 1 - tau)."""
+    tau = Decimal(window)
+    return 2 * min(distance_to_integer(q * Decimal(alpha)), tau, 1 - tau)
+
+
+def mismatch_positions(word, q):
+    """Indices n >= 1 (1-based, word[0] is n = 1) with w(n) != w(n + q)."""
+    return [i + 1 for i in range(len(word) - q) if word[i] != word[i + q]]
+
+
 def factor_complexity(word, k):
     """Number of distinct factors (sub-words) of length k."""
     s = ''.join(map(str, word))
