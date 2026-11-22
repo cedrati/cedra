@@ -59,6 +59,8 @@ Shifting the word by a convergent denominator $q$ changes a bit only when $\{n\a
 
 A finite test such as "no period found in the first N bits" is therefore not evidence of aperiodicity: on 20 000 bits the window $1/\varphi$ word looks exactly 7068-periodic. Aperiodicity comes from the irrationality of $\alpha$, which is proven.
 
+For the Sturmian word the first failure is predictable: the shift $q_k$ holds exactly until $n = q_{k+1}$ when $q_k\alpha - p_k > 0$, and fails at $n = 1$ otherwise. Proofs, tables and the link with the large partial quotients are in **[docs/near-periods.md](docs/near-periods.md)**.
+
 ### Temporal reading
 
 Reading $n$ as discrete time, $S_W$ is a set of instants that is ordered (deterministic, pure point spectrum) but never repeats. The term "temporal quasicrystal" is also used in physics for driven quantum systems (Floquet time quasicrystals); Cedra is a purely mathematical, discrete-time model with no claim on physical systems.
@@ -100,6 +102,8 @@ The peaks at Fibonacci lags come from $\alpha$ being close to $1/\varphi$: $\{F_
 python3 cedra_start.py          # constant, minimal polynomial, continued fraction
 python3 cedra_quasicrystal.py   # model set and Sturmian word, all checks computed
 python3 cedra_benchmark.py      # discrepancy, chi-squared, autocorrelation
+python3 cedra_near_periods.py   # theorems A and B of docs/near-periods.md, N = 10^6
+python3 cedra_continued_fraction.py  # Khinchin, Levy, Gauss-Kuzmin statistics of ln C
 python3 -m unittest test_cedra  # unit tests
 ```
 
@@ -125,7 +129,8 @@ Constants are computed with `decimal` at 60 digits: with plain floats, $\{n\alph
 | $\ln C$ transcendental | ✅ Proven (Lindemann, Weierstrass) |
 | $S_W$ aperiodic Delone set, pure point spectrum | ✅ Proven (model set theory) |
 | Window $[0, \alpha)$ gives a Sturmian word | ✅ Proven |
-| Mismatch rate $2\lVert q\alpha\rVert$ at near-periods | ✅ Proven, verified numerically |
+| Mismatch density $2\min(\lVert q\alpha\rVert, \tau, 1-\tau)$ for every shift $q$ | ✅ Proven, verified numerically |
+| First failure of a Sturmian near-period at $q_{k+1}$ or 1 | ✅ Proven, verified numerically |
 | Fibonacci-lag correlations | ✅ Exact formula, explained by $\alpha \approx 1/\varphi$ |
 | Better than $1/\varphi$ for quasi-Monte Carlo | ❌ False, about 5x worse |
 | Physical interpretation (dimensions, Planck scale) | ❌ Removed: numerical coincidences depending on units |
@@ -136,7 +141,7 @@ Constants are computed with `decimal` at 60 digits: with plain floats, $\{n\alph
 
 - Characterise the Sturmian word with window $\alpha$ through its S-adic representation, read directly from the continued fraction $[0; 1^6, 3, 29, 1, 3, 1, 34, \dots]$.
 - Study the diffraction intensities: Bragg peaks at $k = m + j\alpha$ ($m, j \in \mathbb{Z}$), with amplitude $\left|\frac{\sin(\pi j \tau)}{\pi j}\right|$ for a window of length $\tau$ (largest peaks at the Fibonacci-like $j$).
-- Is the continued fraction of $\ln C$ "typical" (Khinchin, Lévy constants) like almost every real number? Nothing is known in general for logarithms of algebraic numbers.
+- Prove anything about the continued fraction of $\ln C$. Numerically it looks typical (Khinchin 2.708, Lévy 3.295, Gauss–Kuzmin frequencies, see `cedra_continued_fraction.py`), with a giant partial quotient $a_{4091} = 73\,852$, but nothing is known in general for logarithms of algebraic numbers.
 
 <br/>
 

@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-11-22: near-periods note
+
+### Added
+- `docs/near-periods.md`: Theorem A (mismatch density 2 min(||q alpha||, tau, 1 - tau) for every shift q) and Theorem B (first failure of a Sturmian near-period at q_{k+1} or 1), with proofs and tables.
+- `cedra_near_periods.py`: verification of both theorems up to N = 10^6.
+- `cedra_continued_fraction.py`: Khinchin, Levy and Gauss-Kuzmin statistics of ln C; giant partial quotient a_4091 = 73852.
+- `cedra.py`: `mismatch_density`, `mismatch_positions`.
+- Tests for theorems A and B (21 tests).
+
 ## 2026-11-22: mathematical review
 
 ### Added

@@ -6,8 +6,8 @@ import unittest
 
 from cedra import (ALPHA_DEC, CEDRA_DEC, INV_PHI_DEC, MINIMAL_POLYNOMIAL,
                    continued_fraction, convergent_denominators, distance_to_integer,
-                   eval_poly, factor_complexity, frac, kronecker, model_set,
-                   star_discrepancy, window_word)
+                   eval_poly, factor_complexity, frac, kronecker, mismatch_density,
+                   mismatch_positions, model_set, star_discrepancy, window_word)
 from cedra_biquadratic import CedraSolver
 
 
@@ -64,6 +64,23 @@ class TestQuasicrystal(unittest.TestCase):
     def test_gaps(self):
         pts = model_set(self.N)
         self.assertEqual({b - a for a, b in zip(pts, pts[1:])}, {1, 2})
+
+
+class TestNearPeriods(unittest.TestCase):
+    N = 100000
+
+    def test_theorem_a(self):
+        for window in (INV_PHI_DEC, ALPHA_DEC):
+            word = window_word(self.N, window)
+            for q in (3, 4, 13, 47, 100, 1376):
+                measured = len(mismatch_positions(word, q)) / (self.N - q)
+                self.assertAlmostEqual(measured / float(mismatch_density(q, window)), 1, delta=0.1)
+
+    def test_theorem_b_sturmian_first_mismatch(self):
+        word = window_word(10000, ALPHA_DEC)
+        # (q_k, first mismatch): q_{k+1} when q_k alpha - p_k > 0, else 1
+        for q, first in ((5, 8), (8, 1), (13, 47), (47, 1), (1376, 1423), (1423, 1)):
+            self.assertEqual(mismatch_positions(word, q)[0], first)
 
 
 class TestDiscrepancy(unittest.TestCase):
