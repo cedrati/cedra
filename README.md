@@ -43,7 +43,7 @@ Proven properties (general theory of model sets with an interval window):
 
 - **Delone set.** Uniformly discrete and relatively dense; by the three-gap theorem, the gaps take at most three values (here only 1 and 2).
 - **Aperiodic** because $\alpha$ is irrational.
-- **Pure point diffraction**, with Bragg peaks on $\mathbb{Z} + \alpha\mathbb{Z}$ (regular model set).
+- **Pure point diffraction**, with Bragg peaks on $\mathbb{Z} + \alpha\mathbb{Z}$ and explicit intensities ([proof](docs/diffraction.md)).
 - **Density** equal to the window length (Weyl equidistribution).
 
 ### Almost periodic, never periodic
@@ -104,6 +104,8 @@ python3 cedra_quasicrystal.py   # model set and Sturmian word, all checks comput
 python3 cedra_benchmark.py      # discrepancy, chi-squared, autocorrelation
 python3 cedra_near_periods.py   # theorems A and B of docs/near-periods.md, N = 10^6
 python3 cedra_continued_fraction.py  # Khinchin, Levy, Gauss-Kuzmin statistics of ln C
+python3 cedra_diffraction.py    # Bragg peaks, total intensity, autocorrelation
+python3 cedra_sadic.py          # S-adic construction, comparison with Fibonacci
 python3 -m unittest test_cedra  # unit tests
 ```
 
@@ -133,15 +135,22 @@ Constants are computed with `decimal` at 60 digits: with plain floats, $\{n\alph
 | First failure of a Sturmian near-period at $q_{k+1}$ or 1 | ✅ Proven, verified numerically |
 | Fibonacci-lag correlations | ✅ Exact formula, explained by $\alpha \approx 1/\varphi$ |
 | Better than $1/\varphi$ for quasi-Monte Carlo | ❌ False, about 5x worse |
+| Exact pure point diffraction, intensities $\sin^2(\pi j\tau)/(\pi j)^2$ | ✅ Proven, verified numerically |
+| S-adic form, 32-letter agreement with Fibonacci, not automatic | ✅ Proven, verified numerically |
 | Physical interpretation (dimensions, Planck scale) | ❌ Removed: numerical coincidences depending on units |
 
 <br/>
 
+## 🧭 Notes
+
+- **[Near-periods](docs/near-periods.md)**: exact mismatch density of every shift, first failure of the Sturmian near-periods, continued fraction statistics of $\ln C$.
+- **[Diffraction](docs/diffraction.md)**: exact, pure point diffraction $\nu = \sum_j \frac{\sin^2(\pi j\tau)}{\pi^2 j^2}\,\delta_{\{j\alpha\}}$, with an elementary proof (no continuous part, total intensity $\tau$).
+- **[S-adic structure](docs/sturmian-sadic.md)**: the Sturmian word is $\sigma_1^5 \circ \sigma_3 \circ \sigma_{29} \circ \sigma_1 \circ \sigma_3 \circ \cdots (1)$ with $\sigma_1$ the Fibonacci substitution; it imitates the Fibonacci word for exactly 32 letters, and is neither a substitution fixed point nor automatic.
+
 ## 🧭 Open directions
 
-- Characterise the Sturmian word with window $\alpha$ through its S-adic representation, read directly from the continued fraction $[0; 1^6, 3, 29, 1, 3, 1, 34, \dots]$.
-- Study the diffraction intensities: Bragg peaks at $k = m + j\alpha$ ($m, j \in \mathbb{Z}$), with amplitude $\left|\frac{\sin(\pi j \tau)}{\pi j}\right|$ for a window of length $\tau$ (largest peaks at the Fibonacci-like $j$).
 - Prove anything about the continued fraction of $\ln C$. Numerically it looks typical (Khinchin 2.708, Lévy 3.295, Gauss–Kuzmin frequencies, see `cedra_continued_fraction.py`), with a giant partial quotient $a_{4091} = 73\,852$, but nothing is known in general for logarithms of algebraic numbers.
+- Two dimensions: sample $(\{n\alpha\}, \{n\beta\})$ with a second constant built from the same radicals, and study its discrepancy.
 
 <br/>
 
