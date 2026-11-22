@@ -151,6 +151,20 @@ class TestHigherDimensions(unittest.TestCase):
         self.assertEqual(halton(3, (2, 3)), [(0.5, 1 / 3), (0.25, 2 / 3), (0.75, 1 / 9)])
 
 
+class TestLittlewood(unittest.TestCase):
+    def test_witnesses_decrease(self):
+        from cedra_littlewood import convergent_witnesses
+        rec = convergent_witnesses(400)
+        self.assertEqual([k for k, _, _ in rec][:5], [1, 5, 7, 30, 135])
+        self.assertAlmostEqual(rec[3][2], 2.588e-4, delta=1e-7)
+        self.assertEqual(rec[3][1], 14)
+
+    def test_brute_force_cedra_best_at_47(self):
+        from cedra_littlewood import brute_force_records
+        rec = brute_force_records(LOG_CONJUGATES_DEC[0], LOG_CONJUGATES_DEC[1], 100000)
+        self.assertEqual(rec[-1][0], 47)
+
+
 class TestDiscrepancy(unittest.TestCase):
     def test_golden_ratio_beats_cedra(self):
         n = 10000

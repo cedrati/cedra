@@ -42,8 +42,9 @@ Every result is either **proven** in the notes or **measured** by a script, and 
 | 6 | The Sturmian word is $\sigma_1^5 \circ \sigma_3 \circ \sigma_{29} \circ \sigma_1 \circ \sigma_3 \circ \cdots (1)$, where $\sigma_1$ is the Fibonacci substitution; it agrees with the Fibonacci word on exactly 32 letters | Proven, verified | [S-adic](docs/sturmian-sadic.md) |
 | 7 | The Sturmian word is neither a substitution fixed point nor $k$-automatic | Proven (from 2) | [S-adic](docs/sturmian-sadic.md) |
 | 8 | **Theorem D.** $1, \ln\lvert C_1\rvert, \dots, \ln\lvert C_4\rvert$ (Galois conjugates) are linearly independent over $\mathbb{Q}$, via the totally split prime 167 | Proven | [higher dimensions](docs/higher-dimensions.md) |
-| 9 | $\{n \ln C\}$ is about 5 times *less* uniform than $\{n/\varphi\}$ at $N = 10^5$ | Measured | [`cedra_benchmark.py`](cedra_benchmark.py) |
-| 10 | The continued fraction of $\ln C$ looks statistically typical (Khinchin, Lévy, Gauss–Kuzmin) | Measured, not provable with current methods | [near-periods](docs/near-periods.md) |
+| 9 | An explicit integer with 2 117 digits gives the Littlewood product $n\lVert n\ln C_1\rVert\lVert n\ln\lvert C_2\rvert\rVert < 1.5 \times 10^{-7}$ | Certified computation | [higher dimensions](docs/higher-dimensions.md#littlewood-products) |
+| 10 | $\{n \ln C\}$ is about 5 times *less* uniform than $\{n/\varphi\}$ at $N = 10^5$ | Measured | [`cedra_benchmark.py`](cedra_benchmark.py) |
+| 11 | The continued fraction of $\ln C$ looks statistically typical (Khinchin, Lévy, Gauss–Kuzmin) | Measured, not provable with current methods | [near-periods](docs/near-periods.md) |
 
 ## Background
 
@@ -82,10 +83,11 @@ cedra_near_periods.py        Theorems A and B, N = 10^6
 cedra_diffraction.py         Theorem C: Bragg peaks, total intensity, autocorrelation
 cedra_sadic.py               S-adic construction, comparison with the Fibonacci word
 cedra_multidim.py            Theorem D: Galois conjugates, 2D and 4D discrepancy
+cedra_littlewood.py          Littlewood products, explicit witnesses along the convergents
 cedra_continued_fraction.py  Continued fraction statistics of ln C
 cedra_benchmark.py           1D discrepancy, chi-squared and autocorrelation benchmark
 cedra_biquadratic.py         Side utility: scale-invariant solver for ax^4 + bx^2 + c = 0
-test_cedra.py                Unit tests (34)
+test_cedra.py                Unit tests (36)
 docs/                        Mathematical notes with proofs
 ```
 
@@ -148,6 +150,7 @@ As a consequence, a finite test such as "no period in the first $N$ bits" proves
 
 - **Continued fraction of $\ln C$.** It looks typical over 11 393 partial quotients (geometric mean 2.708 against Khinchin's 2.685; $q_n^{1/n}$ = 3.295 against Lévy's 3.276), with a giant quotient $a_{4091} = 73\,852$. Nothing is known in general for logarithms of algebraic numbers.
 - **Simultaneous approximation.** Is the pair $(\ln C_1, \ln\lvert C_2\rvert)$ badly approximable? Up to $n = 2 \times 10^6$ the normalised records stay above 0.076. Almost every pair is not badly approximable (Khintchine), so a negative answer is expected, but no proof is known.
+- **Littlewood conjecture for the Cedra pair.** It would follow from unbounded partial quotients of $\ln C$. Explicit witnesses go down to $1.5 \times 10^{-7}$ (an integer with 2 117 digits), but a proof is out of reach.
 
 ## Citation
 
