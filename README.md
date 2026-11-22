@@ -1,378 +1,145 @@
 # Cedra
 
-*A Geometric Constant Exhibiting Temporal Quasi-Crystalline Properties*
+*An irrational rotation close to the golden ratio, and the temporal quasicrystal it generates*
 
 <br/>
 
-Cedra is a newly defined irrational constant that demonstrates remarkable mathematical properties linking geometry, discrete sequences, and structured randomness. Through its unique formulation, Cedra generates temporal quasi-crystalline behavior—aperiodic patterns with long-range correlations.
+Cedra is the algebraic number
+
+$$C = \sqrt{3} + \sqrt{2} + \sqrt{\tfrac{1}{2}} - 2 = \sqrt{3} + \tfrac{3}{2}\sqrt{2} - 2 \approx 1.853371151128520$$
+
+Its logarithm $\alpha = \ln C \approx 0.617006$ is a transcendental number that happens to sit very close to $1/\varphi \approx 0.618034$. This repository studies the rotation $n \mapsto \{n\alpha\}$ and the one-dimensional quasicrystals (model sets and Sturmian words) it produces. Every number below is reproducible with the scripts of the repository (Python standard library only).
 
 <br/>
 
-$\text{Cedra} = \sqrt{3} + \sqrt{2} + \sqrt{\frac{1}{2}} - 2$
+## 📐 Algebraic facts (proven)
+
+- **Simplification.** $\sqrt{2} + \sqrt{1/2} = \tfrac{3}{2}\sqrt{2}$, so the definition has three independent terms.
+- **Minimal polynomial.** $C$ is algebraic of degree 4: $P(x) = 4x^4 + 32x^3 + 36x^2 - 112x - 167$.
+- **Transcendence of $\alpha$.** $C$ is algebraic and $C \neq 0, 1$, so $\ln C$ is transcendental (Hermite, Lindemann, Weierstrass). In particular $\alpha$ is irrational.
+- **Continued fraction.** $\alpha = [0; 1, 1, 1, 1, 1, 1, 3, 29, 1, 3, 1, 34, 2, \dots]$, while $1/\varphi = [0; 1, 1, 1, \dots]$.
+  Convergent denominators: $1, 1, 2, 3, 5, 8, 13, 47, 1376, 1423, 5645, 7068, \dots$
+
+The continued fraction explains everything that follows: $\alpha$ starts exactly like $1/\varphi$ (Fibonacci denominators up to 13), then the large partial quotients 29 and 34 make it a much better rational approximation target than $1/\varphi$.
+
+> **29/47 is a convergent of $\ln C$.** The approximation $C \approx e^{29/47}$ (relative error $1.5 \times 10^{-5}$) is simply the 7th convergent of the continued fraction. Its accuracy comes from the next partial quotient being large (29), not from a hidden harmony.
 
 <br/>
 
-> 🎯 **Verified Properties**  
-> Cedra enables quasi-Monte Carlo sampling with excellent uniform distribution, generates temporal quasi-crystalline sequences with golden ratio correlations, and provides a mathematical framework for exploring discrete time structures.
+## 🔮 Temporal quasicrystal
+
+The rotation is coded by a window $W \subset [0, 1)$:
+
+$$S_W = \{\, n \in \mathbb{Z} \mid \{n\alpha\} \in W \,\}$$
+
+where $\{x\} = x - \lfloor x \rfloor$. This is the cut-and-project construction of a 1D model set: lattice $\mathbb{Z}^2$, physical space along $n$, internal space the circle.
+
+| Window | Word | Factor complexity $p(n)$ | Gaps | Density |
+|---|---|---|---|---|
+| $[0, \alpha)$ | **Sturmian** | $n + 1$ | 1, 2 | $\alpha \approx 0.6170$ |
+| $[0, 1/\varphi)$ | rotation coding, **not** Sturmian ($1/\varphi \notin \mathbb{Z} + \alpha\mathbb{Z}$) | $2n$ for $n \ge 3$ | 1, 2 | $1/\varphi \approx 0.6180$ |
+
+Proven properties (general theory of model sets with an interval window):
+
+- **Delone set.** Uniformly discrete and relatively dense; by the three-gap theorem, the gaps take at most three values (here only 1 and 2).
+- **Aperiodic** because $\alpha$ is irrational.
+- **Pure point diffraction**, with Bragg peaks on $\mathbb{Z} + \alpha\mathbb{Z}$ (regular model set).
+- **Density** equal to the window length (Weyl equidistribution).
+
+### Almost periodic, never periodic
+
+Shifting the word by a convergent denominator $q$ changes a bit only when $\{n\alpha\}$ falls within $\|q\alpha\|$ of one of the two window edges, so the proportion of mismatches is exactly $2\|q\alpha\|$:
+
+| $q$ | $2\lVert q\alpha\rVert$ | measured (N = 50 000) |
+|---|---|---|
+| 47 | $1.41 \times 10^{-3}$ | $1.40 \times 10^{-3}$ |
+| 1376 | $1.13 \times 10^{-3}$ | $1.11 \times 10^{-3}$ |
+| 1423 | $2.85 \times 10^{-4}$ | $2.88 \times 10^{-4}$ |
+| 7068 | $8.0 \times 10^{-6}$ | 0 mismatch on 20 000 bits |
+
+A finite test such as "no period found in the first N bits" is therefore not evidence of aperiodicity: on 20 000 bits the window $1/\varphi$ word looks exactly 7068-periodic. Aperiodicity comes from the irrationality of $\alpha$, which is proven.
+
+### Temporal reading
+
+Reading $n$ as discrete time, $S_W$ is a set of instants that is ordered (deterministic, pure point spectrum) but never repeats. The term "temporal quasicrystal" is also used in physics for driven quantum systems (Floquet time quasicrystals); Cedra is a purely mathematical, discrete-time model with no claim on physical systems.
 
 <br/>
 
-## 📐 Mathematical Definition
+## 📊 Statistics of $X_n = \{n \ln C\}$
 
-*Cedra = √3 + √2 + √(1/2) - 2 ≈ 1.853371151128520*
+### Uniformity and quasi-Monte Carlo
 
-Cedra is an algebraic number of degree 4 (biquadratic) over ℚ. Its minimal polynomial is:
-P(x) = 4x⁴ + 32x³ + 36x² - 112x - 167
+Star discrepancy $D^*_N$ (lower is better), from `cedra_benchmark.py`:
 
-The Cedra constant combines dimensional root terms in a geometric expression that exhibits unexpected mathematical relationships across multiple domains.
+| $\alpha$ | N = 1 000 | N = 10 000 | N = 100 000 |
+|---|---|---|---|
+| $\ln C$ (Cedra) | 0.00622 | 0.00042 | 0.000148 |
+| $1/\varphi$ | **0.00134** | **0.00026** | **0.000030** |
+| $\sqrt{2} - 1$ | 0.00169 | 0.00027 | 0.000032 |
+| pseudo-random (MT19937) | 0.0362 | 0.0110 | 0.0017 |
+
+Like every Kronecker sequence, Cedra is far more uniform than random sampling. Among Kronecker sequences it is **not** a good choice: because of its large partial quotients, it is about 5 times less uniform than $1/\varphi$ at N = 100 000. The golden ratio is the optimal 1D Kronecker rotation.
+
+About the chi-squared test: a truly random uniform sample gives $\chi^2 \approx 19$ (20 bins). Cedra gives $\chi^2 = 2.44$ at N = 2000. A very low value means *more regular than random*, which is the point of a low-discrepancy sequence, not a sign of "better randomness".
+
+### Autocorrelation
+
+For any rotation, the asymptotic autocorrelation at lag $k$ has the exact value $1 - 6f(1-f)$ with $f = \{k\alpha\}$:
+
+| lag | 1 | 2 | 3 | 5 | 8 | 13 | 21 | 34 | 55 |
+|---|---|---|---|---|---|---|---|---|---|
+| correlation | -0.418 | -0.076 | +0.239 | +0.533 | +0.641 | +0.876 | +0.754 | +0.872 | +0.637 |
+
+The peaks at Fibonacci lags come from $\alpha$ being close to $1/\varphi$: $\{F_k \alpha\}$ is close to 0 or 1. Consecutive pairs $(X_n, X_{n+1})$ lie on two lines, so the sequence is unusable as is for 2D sampling (use several independent irrationals instead) and must never be used for cryptography.
 
 <br/>
 
-## 🔮 Temporal Quasi-Crystalline Properties
+## 🚀 Quick start
 
-### Verified Quasi-Crystal Characteristics
-
-Cedra generates sequences that exhibit **authentic temporal quasi-crystalline behavior**:
-
-**Aperiodic Structure**: The sequence `Xₙ = (n × ln(Cedra)) mod 1` shows no exact periodicity despite underlying harmonic cycles.
-
-**Long-Range Correlations**: Autocorrelation analysis reveals significant correlations at Fibonacci numbers (F₁₃ = 0.88, F₂₁ = 0.76, F₃₄ = 0.87), a hallmark of quasi-crystalline order.
-
-**Golden Ratio Embedding**: Multiple correlation peaks occur at lags corresponding to golden ratio multiples, connecting Cedra to the mathematical foundations of spatial quasi-crystals.
-
-**Uniform Distribution**: Despite complex correlations, the sequence maintains excellent statistical uniformity (χ² = 3.96 << 30.14 threshold).
-
-### Complete Mathematical Formulation
-
-**Single Constant → Complete Temporal Quasicrystal Theory**
-
-From the Cedra constant, we can derive a complete temporal quasicrystal using the cut-and-project method:
+```bash
+python3 cedra_start.py          # constant, minimal polynomial, continued fraction
+python3 cedra_quasicrystal.py   # model set and Sturmian word, all checks computed
+python3 cedra_benchmark.py      # discrepancy, chi-squared, autocorrelation
+python3 -m unittest test_cedra  # unit tests
 ```
-C = √3 + √2 + √(1/2) - 2
-
-α = ln C                                      (rotation parameter)
-
-τ_C = (2√3 + 3√2 - 4) / ((1 + √5) × C)      (window width = 1/φ)
-
-S_C = {n ∈ ℤ | {nα} < τ_C}                  (Delone set)
-
-Where $\{x\} = x - \lfloor x \rfloor$ is the fractional part.
-```
-
-**Properties of $S_C$:**
-- **Discrete and non-periodic**: Genuine quasicrystalline structure
-- **Controlled density**: $\tau_C \approx 0.618$ (inverse golden ratio)
-- **Pure point spectrum**: Bragg peaks at positions $k \in \mathbb{Z} + \alpha\mathbb{Z}$
-- **Sturmian word**: Binary sequence $\sigma_C(n) = 1$ if $\{n\alpha\} < \tau_C$, else $0$
-
-This formulation provides a completely self-contained mathematical framework where **everything derives from the single Cedra constant** - no external parameters needed.
-
-### Temporal vs Spatial Quasi-Crystals
-
-Unlike spatial quasi-crystals that arrange matter aperiodically in space, Cedra creates **temporal quasi-crystals** that arrange discrete time steps aperiodically while maintaining long-range order. This represents a mathematical model for how discrete time evolution might exhibit quasi-crystalline structure.
-
-<br/>
-
-## 📊 Verified Statistical Properties
-
-### Information Theory and Randomness Quality
-
-**Shannon Entropy**: 7.999221 bits (99.99% efficiency) - Excellent information content approaching theoretical maximum for 8-bit precision.
-
-**Randomness Tests**: 
-- Frequency test: ✅ PASS (statistic = 0.0200 < 1.96)
-- Perfect bit balance: 5001/4999 ones/zeros (50.0%)
-- Variance accuracy: 0.083330 vs theoretical 0.083333 (0.00% error)
-
-**Monte Carlo Quality**: Score 4/5 - Excellent for quasi-Monte Carlo applications with superior uniformity compared to standard PRNGs.
-
-### Correlation Structure (Quasi-Crystalline Signature)
-
-**Short-range correlations**: Lag-1 = 0.418 (moderate, expected for quasi-crystals)
-**Long-range correlations**: Structured correlations at Fibonacci lags confirm quasi-crystalline order
-**Classification**: Quasi-random with deterministic structure - ideal balance of randomness and order
-
-*Note: The moderate correlations are not a flaw but the mathematical signature of quasi-crystalline structure, distinguishing Cedra from simple white noise.*
-
-<br/>
-
-## ⚡ Proven Mathematical Relationships
-
-### Golden Ratio Connection
-
-Through the auxiliary constant Delta:
-
-$\delta = \frac{1 + \sqrt{5}}{2\sqrt{3} + 3\sqrt{2} - 4} \approx 0.8730221077$
-
-$\text{Cedra} \times \delta = \varphi \quad \text{(exact to machine precision)}$
-
-This perfect relationship links Cedra to the golden ratio φ, establishing its connection to natural harmony and quasi-crystalline mathematics.
-
-### Exponential Form and Harmonic Cycles
-
-The constant exhibits a remarkable exponential approximation:
-
-$\text{Cedra} \approx e^{29/47} \quad \text{(99.998% precision)}$
-
-This form reveals harmonic properties:
-- **29** → 2+9 = 11
-- **47** → 4+7 = 11  
-- Creates quasi-periodic behavior with fundamental period relationships
-- $\ln(\text{Cedra}) \times 47 \approx 29$ (harmonic resonance)
-
-<br/>
-
-## ⚖️ Chaos and Order Duality
-
-Cedra demonstrates a mathematically verified balance between randomness and structure:
-
-- **Deterministic Chaos**: `Xₙ = (n × ln(Cedra)) mod 1` passes statistical randomness tests
-- **Underlying Order**: Fibonacci correlations and golden ratio relationships  
-- **Perfect Balance**: Structured randomness with quasi-crystalline long-range order
-
-This duality makes Cedra valuable for studying systems where deterministic rules produce complex but fundamentally ordered behavior.
-
-<br/>
-
-## 🌌 Speculative Physical Interpretations
-
-*The following connections are mathematical observations that may suggest deeper physical relationships, but remain hypothetical:*
-
-### Dimensional Signature Hypothesis
-
-The expression `√3 + √2 + √(1/2) - 2` could be interpreted as encoding dimensional relationships:
-- **√3**: Three-dimensional spatial signature
-- **√2**: Two-dimensional surface geometry  
-- **√(1/2)**: One-dimensional linear measure
-- **-2**: Temporal dimension contribution
-
-### Planck Scale Coincidence
-
-Cedra exhibits numerical proximity to fundamental physics scales:
-$f_{\text{Planck}} \approx \text{Cedra} \times 10^{43} \text{ Hz} \quad \text{(99.92% numerical agreement)}$
-
-*Note: This appears to be a remarkable numerical coincidence rather than a proven physical relationship.*
-
-<br/>
-
-## 🚀 Quick Start
 
 ```python
-import math
-import statistics
+from cedra import ALPHA_DEC, kronecker, model_set, window_word
 
-# Define Cedra constant
-cedra = math.sqrt(3) + math.sqrt(2) + math.sqrt(1/2) - 2
-ln_cedra = math.log(cedra)
-
-# Define Delta constant for golden ratio relationship
-delta = (1 + math.sqrt(5)) / (2*math.sqrt(3) + 3*math.sqrt(2) - 4)
-
-# Verify golden ratio connection
-phi = cedra * delta
-golden_ratio = (1 + math.sqrt(5)) / 2
-
-print(f"Cedra = {cedra}")
-print(f"ln(Cedra) = {ln_cedra}")
-print(f"Cedra × Delta = {phi}")
-print(f"Golden Ratio = {golden_ratio}")
-print(f"Perfect match: {abs(phi - golden_ratio) < 1e-14}")
-
-# TEMPORAL QUASI-CRYSTAL: Deterministic but aperiodic sequence
-def quasi_crystal_sequence(n):
-    return (n * ln_cedra) % 1
-
-# ORDER sequence: Demonstrates complementary structure  
-def order_sequence(n):
-    return (n - ln_cedra) % 1
-
-# Generate and analyze quasi-crystalline properties
-print("\nTemporal Quasi-Crystal sequence (first 10 values):")
-for n in range(1, 11):
-    xn = quasi_crystal_sequence(n)
-    print(f"X{n} = {xn:.6f}")
-
-print(f"\nOrder sequence (constant for all n):")
-yn = order_sequence(1)
-print(f"Yn = {yn:.6f}")
-
-# Verify exponential form
-exp_form = math.exp(29/47)
-precision = 100 * (1 - abs(cedra - exp_form) / cedra)
-print(f"\nExponential form e^(29/47) = {exp_form:.10f}")
-print(f"Precision: {precision:.3f}%")
-
-# PERFORMANCE BENCHMARKING
-print("\n" + "="*60)
-print("CEDRA PERFORMANCE ANALYSIS")
-print("="*60)
-
-# Generate test sequence for analysis
-n_samples = 2000
-sequence = [quasi_crystal_sequence(n) for n in range(1, n_samples + 1)]
-
-# 1. Uniformity Test (Chi-squared)
-def chi_squared_uniformity(data, bins=20):
-    counts = [0] * bins
-    for x in data:
-        bin_idx = min(int(x * bins), bins - 1)
-        counts[bin_idx] += 1
-    
-    expected = len(data) / bins
-    chi_sq = sum((observed - expected)**2 / expected for observed in counts)
-    return chi_sq
-
-chi_sq = chi_squared_uniformity(sequence)
-print(f"\nUniformity Analysis:")
-print(f"• Chi-squared statistic: {chi_sq:.2f}")
-print(f"• Critical value (p=0.05): 30.14")
-print(f"• Result: {'EXCELLENT' if chi_sq < 30.14 else 'POOR'} uniformity")
-
-# 2. Low-Discrepancy Test
-def compute_discrepancy(data, n_test=1000):
-    sample = data[:n_test]
-    max_disc = 0
-    
-    for i in range(1, 101):  # Test intervals [0, i/100]
-        threshold = i / 100
-        count = sum(1 for x in sample if x <= threshold)
-        empirical = count / len(sample)
-        theoretical = threshold
-        discrepancy = abs(empirical - theoretical)
-        max_disc = max(max_disc, discrepancy)
-    
-    return max_disc
-
-discrepancy = compute_discrepancy(sequence)
-print(f"\nLow-Discrepancy Analysis:")
-print(f"• Maximum discrepancy: {discrepancy:.6f}")
-print(f"• Quality: {'EXCELLENT' if discrepancy < 0.05 else 'GOOD' if discrepancy < 0.1 else 'POOR'}")
-print(f"• Quasi-Monte Carlo grade: {'SUPERIOR' if discrepancy < 0.01 else 'GOOD'}")
-
-# 3. Statistical Properties
-mean_val = statistics.mean(sequence)
-variance_val = statistics.variance(sequence)
-theoretical_variance = 1/12  # For uniform [0,1]
-
-print(f"\nStatistical Properties:")
-print(f"• Mean: {mean_val:.6f} (theoretical: 0.5)")
-print(f"• Variance: {variance_val:.6f} (theoretical: {theoretical_variance:.6f})")
-print(f"• Mean error: {abs(mean_val - 0.5):.6f}")
-print(f"• Variance error: {abs(variance_val - theoretical_variance)/theoretical_variance*100:.2f}%")
-
-# 4. Serial Correlation
-def serial_correlation(data, lag=1):
-    n = len(data) - lag
-    if n <= 0:
-        return 0
-    
-    sum_xy = sum(data[i] * data[i + lag] for i in range(n))
-    sum_x = sum(data[i] for i in range(n))
-    sum_y = sum(data[i + lag] for i in range(n))
-    sum_x2 = sum(data[i]**2 for i in range(n))
-    sum_y2 = sum(data[i + lag]**2 for i in range(n))
-    
-    numerator = n * sum_xy - sum_x * sum_y
-    denominator = math.sqrt((n * sum_x2 - sum_x**2) * (n * sum_y2 - sum_y**2))
-    
-    return numerator / denominator if denominator != 0 else 0
-
-corr_lag1 = abs(serial_correlation(sequence, 1))
-corr_lag10 = abs(serial_correlation(sequence, 10))
-
-print(f"\nCorrelation Analysis:")
-print(f"• Lag-1 correlation: {corr_lag1:.6f}")
-print(f"• Lag-10 correlation: {corr_lag10:.6f}")
-print(f"• Independence: {'EXCELLENT' if corr_lag1 < 0.02 else 'GOOD' if corr_lag1 < 0.05 else 'MODERATE'}")
-
-# 5. Final Performance Score
-scores = [
-    chi_sq < 30.14,                           # Uniformity
-    discrepancy < 0.05,                       # Low-discrepancy  
-    abs(mean_val - 0.5) < 0.01,              # Centering
-    abs(variance_val - theoretical_variance)/theoretical_variance < 0.01,  # Variance
-    corr_lag1 < 0.05                         # Independence
-]
-
-total_score = sum(scores)
-print(f"\nPERFORMANCE SUMMARY:")
-print(f"• Overall Score: {total_score}/5")
-print(f"• Classification: {['POOR', 'FAIR', 'GOOD', 'VERY GOOD', 'EXCELLENT'][total_score]}")
-print(f"• Quasi-Monte Carlo Ready: {'YES' if total_score >= 4 else 'LIMITED'}")
-print(f"• Competitive Advantage: {'SUPERIOR' if chi_sq < 10 and discrepancy < 0.01 else 'GOOD'}")
-
-print(f"\nCedra outperforms Math.random() in uniformity by {33.48/chi_sq:.1f}x")
+kronecker(5)                       # [0.617006..., 0.234012..., ...]
+model_set(20)                      # [1, 2, 4, 5, 7, 9, 10, 12, 13, 15, 17, 18, 20]
+window_word(20, window=ALPHA_DEC)  # Sturmian word
 ```
 
-<br/>
+Constants are computed with `decimal` at 60 digits: with plain floats, $\{n\alpha\}$ is off by $7 \times 10^{-8}$ at $n = 10^9$ and by $10^{-5}$ at $n = 10^{12}$.
 
-## 🏆 Competitive Analysis & Benchmarking
-
-### Performance Comparison
-
-**Benchmarking Results**: Cedra ranks #1 among specialized generators (38/50 points)
-
-| Generator | Uniformity | Independence | Period | Complexity | Special Properties | Total |
-|-----------|------------|--------------|---------|------------|-------------------|-------|
-| **Cedra** | 9/10 | 6/10 | 10/10 | 3/10 | 10/10 | **38/50** |
-| Sobol | 10/10 | 4/10 | 8/10 | 6/10 | 8/10 | 36/50 |
-| Mersenne Twister | 8/10 | 9/10 | 10/10 | 7/10 | 0/10 | 34/50 |
-| Math.random | 6/10 | 8/10 | 9/10 | 8/10 | 0/10 | 31/50 |
-
-### Measured Superiority
-
-- **1D Uniformity**: χ² = 2.44 vs Math.random χ² = 33.48 (14x better)
-- **Low-Discrepancy**: 0.006 (excellent for quasi-Monte Carlo applications)
-- **Perfect Theoretical Compliance**: Variance = 0.08333 (exact match)
-- **Aperiodic Structure**: No detectable period >1000 elements
-- **Unique Properties**: Only generator with verified temporal quasi-crystalline behavior
-
-### Limitations (Honest Assessment)
-
-- **Lempel-Ziv Complexity**: 0.0025 (structured, not suitable for cryptography)
-- **High-Dimensional Correlations**: Fails 2D/3D equidistribution tests
-- **Predictable**: Deterministic nature limits security applications
-- **Specialized Use**: Not a universal random number generator
+`cedra_biquadratic.py` is a side utility: a scale-invariant solver for $ax^4 + bx^2 + c = 0$.
 
 <br/>
 
-## 📊 Optimal Applications
+## 🔬 Status of the claims
 
-### ✅ Recommended Use Cases
-- **Quasi-Monte Carlo Integration**: Superior low-discrepancy properties
-- **Geometric Simulations**: Leverages quasi-crystalline structure
-- **Mathematical Research**: Unique temporal quasi-crystal modeling
-- **1D Sampling**: Exceptional uniformity for single-dimensional problems
-- **Discrete Time Modeling**: Natural framework for temporal discretization
-
-### ❌ Not Recommended For
-- **Cryptographic Applications**: Structured correlations compromise security
-- **High-Dimensional Monte Carlo**: Strong dimensional correlations
-- **General-Purpose Randomness**: Specialized tool, not universal PRNG
-- **Security-Critical Systems**: Deterministic and predictable nature
+| Statement | Status |
+|---|---|
+| $C$ algebraic of degree 4, minimal polynomial above | ✅ Proven |
+| $\ln C$ transcendental | ✅ Proven (Lindemann, Weierstrass) |
+| $S_W$ aperiodic Delone set, pure point spectrum | ✅ Proven (model set theory) |
+| Window $[0, \alpha)$ gives a Sturmian word | ✅ Proven |
+| Mismatch rate $2\lVert q\alpha\rVert$ at near-periods | ✅ Proven, verified numerically |
+| Fibonacci-lag correlations | ✅ Exact formula, explained by $\alpha \approx 1/\varphi$ |
+| Better than $1/\varphi$ for quasi-Monte Carlo | ❌ False, about 5x worse |
+| Physical interpretation (dimensions, Planck scale) | ❌ Removed: numerical coincidences depending on units |
 
 <br/>
 
-## 🔬 Verified vs Speculative Claims
+## 🧭 Open directions
 
-### ✅ Mathematically Proven
-- All numerical relationships and formulas
-- Quasi-crystalline sequence properties
-- Statistical uniformity and correlation patterns
-- Golden ratio connections
-
-### 🤔 Theoretical/Speculative  
-- Physical interpretations of dimensional signatures
-- Connections to fundamental physics constants
-- Applications to spacetime structure
-- Quantum mechanics relationships
+- Characterise the Sturmian word with window $\alpha$ through its S-adic representation, read directly from the continued fraction $[0; 1^6, 3, 29, 1, 3, 1, 34, \dots]$.
+- Study the diffraction intensities: Bragg peaks at $k = m + j\alpha$ ($m, j \in \mathbb{Z}$), with amplitude $\left|\frac{\sin(\pi j \tau)}{\pi j}\right|$ for a window of length $\tau$ (largest peaks at the Fibonacci-like $j$).
+- Is the continued fraction of $\ln C$ "typical" (Khinchin, Lévy constants) like almost every real number? Nothing is known in general for logarithms of algebraic numbers.
 
 <br/>
 
-| Expression | Description | Status |
-|-----------|-------------|---------|
-| `Cedra = √3 + √2 + √(1/2) - 2`| Mathematical definition | ✅ Proven |
-| `Xₙ = (n × ln(Cedra)) mod 1` | Quasi-crystalline sequence | ✅ Verified |
-| `Cedra × δ = φ` | Golden ratio relationship | ✅ Exact |
-| `Cedra ≈ e^(29/47)` | Exponential form | ✅ 99.998% precision |
-| Spacetime applications | Physical interpretations | 🤔 Speculative |
+## License
+
+CC BY-NC 4.0, see [LICENSE](LICENSE).
