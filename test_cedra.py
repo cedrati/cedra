@@ -4,7 +4,7 @@ from decimal import Decimal
 import random
 import unittest
 
-from cedra import (ALPHA_DEC, autocorrelation, bragg_intensity, fourier_bohr, sadic_word, substitution, CEDRA_DEC, INV_PHI_DEC, MINIMAL_POLYNOMIAL,
+from cedra import (CONJUGATES_DEC, LOG_CONJUGATES_DEC, halton, kronecker_nd, l2_star_discrepancy, ALPHA_DEC, autocorrelation, bragg_intensity, fourier_bohr, sadic_word, substitution, CEDRA_DEC, INV_PHI_DEC, MINIMAL_POLYNOMIAL,
                    continued_fraction, convergent_denominators, distance_to_integer,
                    eval_poly, factor_complexity, frac, kronecker, mismatch_density,
                    mismatch_positions, model_set, star_discrepancy, window_word)
@@ -122,6 +122,33 @@ class TestSAdic(unittest.TestCase):
         c, fib = sadic_word(200), sadic_word(200, INV_PHI_DEC)
         self.assertEqual(c[:32], fib[:32])
         self.assertNotEqual(c[32], fib[32])
+
+
+class TestHigherDimensions(unittest.TestCase):
+    def test_conjugates_are_roots(self):
+        for c in CONJUGATES_DEC:
+            self.assertLess(abs(eval_poly(MINIMAL_POLYNOMIAL, c)), Decimal("1e-45"))
+
+    def test_norm_and_splitting_of_167(self):
+        norm = 16 * CONJUGATES_DEC[0] * CONJUGATES_DEC[1] * CONJUGATES_DEC[2] * CONJUGATES_DEC[3]
+        self.assertLess(abs(norm + 668), Decimal("1e-40"))
+        roots = [x for x in range(167) if eval_poly(MINIMAL_POLYNOMIAL, x) % 167 == 0]
+        self.assertEqual(roots, [0, 39, 124, 163])
+
+    def test_c4_is_minus_c1_minus_4(self):
+        self.assertLess(abs(CONJUGATES_DEC[3] + CONJUGATES_DEC[0] + 4), Decimal("1e-50"))
+
+    def test_warnock_one_point(self):
+        # one point at 1/2 in dimension 1: L2 star discrepancy^2 = 1/12
+        self.assertAlmostEqual(l2_star_discrepancy([(0.5,)]) ** 2, 1 / 12)
+
+    def test_4d_equidistribution_box(self):
+        pts = kronecker_nd(20000, LOG_CONJUGATES_DEC)
+        inside = sum(all(x < 0.5 for x in p) for p in pts) / len(pts)
+        self.assertAlmostEqual(inside, 1 / 16, delta=0.005)
+
+    def test_halton_first_points(self):
+        self.assertEqual(halton(3, (2, 3)), [(0.5, 1 / 3), (0.25, 2 / 3), (0.75, 1 / 9)])
 
 
 class TestDiscrepancy(unittest.TestCase):

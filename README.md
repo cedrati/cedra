@@ -1,159 +1,166 @@
 # Cedra
 
-*An irrational rotation close to the golden ratio, and the temporal quasicrystal it generates*
+**An irrational rotation close to the golden ratio, and the one-dimensional quasicrystals it generates.**
 
-<br/>
+[![License: CC BY-NC 4.0](https://img.shields.io/badge/License-CC%20BY--NC%204.0-lightgrey.svg)](LICENSE)
+![Python 3.8+](https://img.shields.io/badge/python-3.8%2B-blue.svg)
+![Dependencies: none](https://img.shields.io/badge/dependencies-none-brightgreen.svg)
 
 Cedra is the algebraic number
 
-$$C = \sqrt{3} + \sqrt{2} + \sqrt{\tfrac{1}{2}} - 2 = \sqrt{3} + \tfrac{3}{2}\sqrt{2} - 2 \approx 1.853371151128520$$
+$$C = \sqrt{3} + \sqrt{2} + \sqrt{\tfrac{1}{2}} - 2 = \sqrt{3} + \tfrac{3}{2}\sqrt{2} - 2 \approx 1.853371151128520.$$
 
-Its logarithm $\alpha = \ln C \approx 0.617006$ is a transcendental number that happens to sit very close to $1/\varphi \approx 0.618034$. This repository studies the rotation $n \mapsto \{n\alpha\}$ and the one-dimensional quasicrystals (model sets and Sturmian words) it produces. Every number below is reproducible with the scripts of the repository (Python standard library only).
+Its logarithm $\alpha = \ln C \approx 0.617006$ is transcendental and lies very close to $1/\varphi \approx 0.618034$. This repository studies the rotation $n \mapsto \{n\alpha\}$ and the structures it generates: model sets, Sturmian words, their diffraction, and their extension to several dimensions through the Galois conjugates of $C$.
 
-<br/>
+Every result is either **proven** in the notes or **measured** by a script, and all numbers are reproducible with the Python standard library alone.
 
-## 📐 Algebraic facts (proven)
+---
 
-- **Simplification.** $\sqrt{2} + \sqrt{1/2} = \tfrac{3}{2}\sqrt{2}$, so the definition has three independent terms.
-- **Minimal polynomial.** $C$ is algebraic of degree 4: $P(x) = 4x^4 + 32x^3 + 36x^2 - 112x - 167$.
-- **Transcendence of $\alpha$.** $C$ is algebraic and $C \neq 0, 1$, so $\ln C$ is transcendental (Hermite, Lindemann, Weierstrass). In particular $\alpha$ is irrational.
-- **Continued fraction.** $\alpha = [0; 1, 1, 1, 1, 1, 1, 3, 29, 1, 3, 1, 34, 2, \dots]$, while $1/\varphi = [0; 1, 1, 1, \dots]$.
-  Convergent denominators: $1, 1, 2, 3, 5, 8, 13, 47, 1376, 1423, 5645, 7068, \dots$
+## Contents
 
-The continued fraction explains everything that follows: $\alpha$ starts exactly like $1/\varphi$ (Fibonacci denominators up to 13), then the large partial quotients 29 and 34 make it a much better rational approximation target than $1/\varphi$.
+- [Main results](#main-results)
+- [Background](#background)
+- [Repository layout](#repository-layout)
+- [Usage](#usage)
+- [Numerical highlights](#numerical-highlights)
+- [Scope and limitations](#scope-and-limitations)
+- [Open questions](#open-questions)
+- [Citation](#citation)
+- [License](#license)
 
-> **29/47 is a convergent of $\ln C$.** The approximation $C \approx e^{29/47}$ (relative error $1.5 \times 10^{-5}$) is simply the 7th convergent of the continued fraction. Its accuracy comes from the next partial quotient being large (29), not from a hidden harmony.
+---
 
-<br/>
+## Main results
 
-## 🔮 Temporal quasicrystal
+| # | Statement | Status | Reference |
+|---|---|---|---|
+| 1 | $C$ is algebraic of degree 4, with minimal polynomial $4x^4 + 32x^3 + 36x^2 - 112x - 167$ | Proven | [`cedra_start.py`](cedra_start.py) |
+| 2 | $\alpha = \ln C$ is transcendental (Lindemann, Weierstrass) | Proven | [Background](#background) |
+| 3 | **Theorem A.** For every shift $q$, the density of $n$ with $w(n) \neq w(n+q)$ is $2\min(\lVert q\alpha\rVert, \tau, 1-\tau)$ | Proven, verified to $N = 10^6$ | [near-periods](docs/near-periods.md) |
+| 4 | **Theorem B.** In the Sturmian word, the near-period $q_k$ fails first at $n = q_{k+1}$ or at $n = 1$, depending on the sign of $q_k\alpha - p_k$ | Proven, verified | [near-periods](docs/near-periods.md) |
+| 5 | **Theorem C.** The diffraction is pure point: $\nu = \sum_{j} \frac{\sin^2(\pi j\tau)}{\pi^2 j^2}\,\delta_{\{j\alpha\}}$, with an elementary proof | Proven, verified | [diffraction](docs/diffraction.md) |
+| 6 | The Sturmian word is $\sigma_1^5 \circ \sigma_3 \circ \sigma_{29} \circ \sigma_1 \circ \sigma_3 \circ \cdots (1)$, where $\sigma_1$ is the Fibonacci substitution; it agrees with the Fibonacci word on exactly 32 letters | Proven, verified | [S-adic](docs/sturmian-sadic.md) |
+| 7 | The Sturmian word is neither a substitution fixed point nor $k$-automatic | Proven (from 2) | [S-adic](docs/sturmian-sadic.md) |
+| 8 | **Theorem D.** $1, \ln\lvert C_1\rvert, \dots, \ln\lvert C_4\rvert$ (Galois conjugates) are linearly independent over $\mathbb{Q}$, via the totally split prime 167 | Proven | [higher dimensions](docs/higher-dimensions.md) |
+| 9 | $\{n \ln C\}$ is about 5 times *less* uniform than $\{n/\varphi\}$ at $N = 10^5$ | Measured | [`cedra_benchmark.py`](cedra_benchmark.py) |
+| 10 | The continued fraction of $\ln C$ looks statistically typical (Khinchin, Lévy, Gauss–Kuzmin) | Measured, not provable with current methods | [near-periods](docs/near-periods.md) |
 
-The rotation is coded by a window $W \subset [0, 1)$:
+## Background
+
+**Continued fraction.** Everything is governed by
+
+$$\alpha = [0;\ 1, 1, 1, 1, 1, 1,\ 3,\ 29,\ 1, 3, 1,\ 34,\ 2, \dots]$$
+
+with convergent denominators $1, 1, 2, 3, 5, 8, 13, 47, 1376, 1423, 5645, 7068, \dots$
+
+- The opening run of six 1s is shared with $1/\varphi = [0; 1, 1, 1, \dots]$. It explains the "golden ratio flavour": Fibonacci-lag correlations, and a Sturmian word that starts like the Fibonacci word.
+- The large partial quotients 29 and 34 explain three facts at once:
+  - the approximation $C \approx e^{29/47}$, since $29/47$ is the 7th convergent;
+  - unusually sharp near-periods at 47 and 7068;
+  - a discrepancy worse than that of $1/\varphi$.
+
+**Transcendence.** $C$ is algebraic and $C \neq 0, 1$, so $\ln C$ is transcendental by the Lindemann–Weierstrass theorem. In particular $\alpha$ is irrational, and $(\{n\alpha\})$ is equidistributed (Weyl).
+
+**Quasicrystal.** For a window $W = [0, \tau)$,
 
 $$S_W = \{\, n \in \mathbb{Z} \mid \{n\alpha\} \in W \,\}$$
 
-where $\{x\} = x - \lfloor x \rfloor$. This is the cut-and-project construction of a 1D model set: lattice $\mathbb{Z}^2$, physical space along $n$, internal space the circle.
+is a one-dimensional cut-and-project (model) set: an aperiodic Delone set with gaps 1 and 2 and density $\tau$. Reading $n$ as discrete time gives a *temporal quasicrystal*: deterministic and ordered, but never periodic.
 
-| Window | Word | Factor complexity $p(n)$ | Gaps | Density |
-|---|---|---|---|---|
-| $[0, \alpha)$ | **Sturmian** | $n + 1$ | 1, 2 | $\alpha \approx 0.6170$ |
-| $[0, 1/\varphi)$ | rotation coding, **not** Sturmian ($1/\varphi \notin \mathbb{Z} + \alpha\mathbb{Z}$) | $2n$ for $n \ge 3$ | 1, 2 | $1/\varphi \approx 0.6180$ |
-
-Proven properties (general theory of model sets with an interval window):
-
-- **Delone set.** Uniformly discrete and relatively dense; by the three-gap theorem, the gaps take at most three values (here only 1 and 2).
-- **Aperiodic** because $\alpha$ is irrational.
-- **Pure point diffraction**, with Bragg peaks on $\mathbb{Z} + \alpha\mathbb{Z}$ and explicit intensities ([proof](docs/diffraction.md)).
-- **Density** equal to the window length (Weyl equidistribution).
-
-### Almost periodic, never periodic
-
-Shifting the word by a convergent denominator $q$ changes a bit only when $\{n\alpha\}$ falls within $\|q\alpha\|$ of one of the two window edges, so the proportion of mismatches is exactly $2\|q\alpha\|$:
-
-| $q$ | $2\lVert q\alpha\rVert$ | measured (N = 50 000) |
-|---|---|---|
-| 47 | $1.41 \times 10^{-3}$ | $1.40 \times 10^{-3}$ |
-| 1376 | $1.13 \times 10^{-3}$ | $1.11 \times 10^{-3}$ |
-| 1423 | $2.85 \times 10^{-4}$ | $2.88 \times 10^{-4}$ |
-| 7068 | $8.0 \times 10^{-6}$ | 0 mismatch on 20 000 bits |
-
-A finite test such as "no period found in the first N bits" is therefore not evidence of aperiodicity: on 20 000 bits the window $1/\varphi$ word looks exactly 7068-periodic. Aperiodicity comes from the irrationality of $\alpha$, which is proven.
-
-For the Sturmian word the first failure is predictable: the shift $q_k$ holds exactly until $n = q_{k+1}$ when $q_k\alpha - p_k > 0$, and fails at $n = 1$ otherwise. Proofs, tables and the link with the large partial quotients are in **[docs/near-periods.md](docs/near-periods.md)**.
-
-### Temporal reading
-
-Reading $n$ as discrete time, $S_W$ is a set of instants that is ordered (deterministic, pure point spectrum) but never repeats. The term "temporal quasicrystal" is also used in physics for driven quantum systems (Floquet time quasicrystals); Cedra is a purely mathematical, discrete-time model with no claim on physical systems.
-
-<br/>
-
-## 📊 Statistics of $X_n = \{n \ln C\}$
-
-### Uniformity and quasi-Monte Carlo
-
-Star discrepancy $D^*_N$ (lower is better), from `cedra_benchmark.py`:
-
-| $\alpha$ | N = 1 000 | N = 10 000 | N = 100 000 |
+| Window | Word | Factor complexity | Density |
 |---|---|---|---|
-| $\ln C$ (Cedra) | 0.00622 | 0.00042 | 0.000148 |
-| $1/\varphi$ | **0.00134** | **0.00026** | **0.000030** |
-| $\sqrt{2} - 1$ | 0.00169 | 0.00027 | 0.000032 |
-| pseudo-random (MT19937) | 0.0362 | 0.0110 | 0.0017 |
+| $[0, \alpha)$ | Sturmian | $n + 1$ | $\alpha \approx 0.6170$ |
+| $[0, 1/\varphi)$ | rotation coding, not Sturmian | $2n$ for $n \ge 3$ | $1/\varphi \approx 0.6180$ |
 
-Like every Kronecker sequence, Cedra is far more uniform than random sampling. Among Kronecker sequences it is **not** a good choice: because of its large partial quotients, it is about 5 times less uniform than $1/\varphi$ at N = 100 000. The golden ratio is the optimal 1D Kronecker rotation.
+## Repository layout
 
-About the chi-squared test: a truly random uniform sample gives $\chi^2 \approx 19$ (20 bins). Cedra gives $\chi^2 = 2.44$ at N = 2000. A very low value means *more regular than random*, which is the point of a low-discrepancy sequence, not a sign of "better randomness".
+```
+cedra.py                     Core library: constants (60-digit decimal), sequences, words, measures
+cedra_start.py               Constant, minimal polynomial, continued fraction
+cedra_quasicrystal.py        Model set and Sturmian word, computed checks
+cedra_near_periods.py        Theorems A and B, N = 10^6
+cedra_diffraction.py         Theorem C: Bragg peaks, total intensity, autocorrelation
+cedra_sadic.py               S-adic construction, comparison with the Fibonacci word
+cedra_multidim.py            Theorem D: Galois conjugates, 2D and 4D discrepancy
+cedra_continued_fraction.py  Continued fraction statistics of ln C
+cedra_benchmark.py           1D discrepancy, chi-squared and autocorrelation benchmark
+cedra_biquadratic.py         Side utility: scale-invariant solver for ax^4 + bx^2 + c = 0
+test_cedra.py                Unit tests (34)
+docs/                        Mathematical notes with proofs
+```
 
-### Autocorrelation
+## Usage
 
-For any rotation, the asymptotic autocorrelation at lag $k$ has the exact value $1 - 6f(1-f)$ with $f = \{k\alpha\}$:
-
-| lag | 1 | 2 | 3 | 5 | 8 | 13 | 21 | 34 | 55 |
-|---|---|---|---|---|---|---|---|---|---|
-| correlation | -0.418 | -0.076 | +0.239 | +0.533 | +0.641 | +0.876 | +0.754 | +0.872 | +0.637 |
-
-The peaks at Fibonacci lags come from $\alpha$ being close to $1/\varphi$: $\{F_k \alpha\}$ is close to 0 or 1. Consecutive pairs $(X_n, X_{n+1})$ lie on two lines, so the sequence is unusable as is for 2D sampling (use several independent irrationals instead) and must never be used for cryptography.
-
-<br/>
-
-## 🚀 Quick start
+Requirements: Python 3.8 or later, no third-party package.
 
 ```bash
-python3 cedra_start.py          # constant, minimal polynomial, continued fraction
-python3 cedra_quasicrystal.py   # model set and Sturmian word, all checks computed
-python3 cedra_benchmark.py      # discrepancy, chi-squared, autocorrelation
-python3 cedra_near_periods.py   # theorems A and B of docs/near-periods.md, N = 10^6
-python3 cedra_continued_fraction.py  # Khinchin, Levy, Gauss-Kuzmin statistics of ln C
-python3 cedra_diffraction.py    # Bragg peaks, total intensity, autocorrelation
-python3 cedra_sadic.py          # S-adic construction, comparison with Fibonacci
-python3 -m unittest test_cedra  # unit tests
+git clone https://github.com/cedrati/cedra.git
+cd cedra
+python3 -m unittest test_cedra      # run the test suite
+python3 cedra_near_periods.py       # reproduce any note, e.g. Theorems A and B
 ```
 
 ```python
-from cedra import ALPHA_DEC, kronecker, model_set, window_word
+from cedra import ALPHA_DEC, kronecker, model_set, window_word, sadic_word
 
-kronecker(5)                       # [0.617006..., 0.234012..., ...]
-model_set(20)                      # [1, 2, 4, 5, 7, 9, 10, 12, 13, 15, 17, 18, 20]
-window_word(20, window=ALPHA_DEC)  # Sturmian word
+kronecker(3)                        # [0.617006..., 0.234012..., 0.851019...]
+model_set(20)                       # [1, 2, 4, 5, 7, 9, 10, 12, 13, 15, 17, 18, 20]
+window_word(10, window=ALPHA_DEC)   # Sturmian word: [0, 1, 0, 1, 1, 0, 1, 0, 1, 1]
+sadic_word(13)                      # '1011010110110'
 ```
 
-Constants are computed with `decimal` at 60 digits: with plain floats, $\{n\alpha\}$ is off by $7 \times 10^{-8}$ at $n = 10^9$ and by $10^{-5}$ at $n = 10^{12}$.
+Constants are computed with `decimal` at 60 significant digits. With double-precision floats, $\{n\alpha\}$ would be off by $7 \times 10^{-8}$ at $n = 10^9$ and by $10^{-5}$ at $n = 10^{12}$.
 
-`cedra_biquadratic.py` is a side utility: a scale-invariant solver for $ax^4 + bx^2 + c = 0$.
+## Numerical highlights
 
-<br/>
+**Near-periods** ($N = 10^6$, window $1/\varphi$). The measured mismatch density matches Theorem A:
 
-## 🔬 Status of the claims
+| shift $q$ | 47 | 1376 | 1423 | 5645 |
+|---|---|---|---|---|
+| theory $2\lVert q\alpha\rVert$ | $1.415 \times 10^{-3}$ | $1.130 \times 10^{-3}$ | $2.846 \times 10^{-4}$ | $2.765 \times 10^{-4}$ |
+| measured | $1.414 \times 10^{-3}$ | $1.130 \times 10^{-3}$ | $2.844 \times 10^{-4}$ | $2.756 \times 10^{-4}$ |
 
-| Statement | Status |
-|---|---|
-| $C$ algebraic of degree 4, minimal polynomial above | ✅ Proven |
-| $\ln C$ transcendental | ✅ Proven (Lindemann, Weierstrass) |
-| $S_W$ aperiodic Delone set, pure point spectrum | ✅ Proven (model set theory) |
-| Window $[0, \alpha)$ gives a Sturmian word | ✅ Proven |
-| Mismatch density $2\min(\lVert q\alpha\rVert, \tau, 1-\tau)$ for every shift $q$ | ✅ Proven, verified numerically |
-| First failure of a Sturmian near-period at $q_{k+1}$ or 1 | ✅ Proven, verified numerically |
-| Fibonacci-lag correlations | ✅ Exact formula, explained by $\alpha \approx 1/\varphi$ |
-| Better than $1/\varphi$ for quasi-Monte Carlo | ❌ False, about 5x worse |
-| Exact pure point diffraction, intensities $\sin^2(\pi j\tau)/(\pi j)^2$ | ✅ Proven, verified numerically |
-| S-adic form, 32-letter agreement with Fibonacci, not automatic | ✅ Proven, verified numerically |
-| Physical interpretation (dimensions, Planck scale) | ❌ Removed: numerical coincidences depending on units |
+As a consequence, a finite test such as "no period in the first $N$ bits" proves nothing: 20 000 bits of this word are exactly 7068-periodic.
 
-<br/>
+**One-dimensional uniformity**, star discrepancy $D^*_N$ (lower is better):
 
-## 🧭 Notes
+| sequence | $N = 10^3$ | $N = 10^4$ | $N = 10^5$ |
+|---|---|---|---|
+| $\{n \ln C\}$ | 0.00622 | 0.00042 | 0.000148 |
+| $\{n/\varphi\}$ | **0.00134** | **0.00026** | **0.000030** |
+| $\{n(\sqrt{2}-1)\}$ | 0.00169 | 0.00027 | 0.000032 |
+| pseudo-random (MT19937) | 0.0362 | 0.0110 | 0.0017 |
 
-- **[Near-periods](docs/near-periods.md)**: exact mismatch density of every shift, first failure of the Sturmian near-periods, continued fraction statistics of $\ln C$.
-- **[Diffraction](docs/diffraction.md)**: exact, pure point diffraction $\nu = \sum_j \frac{\sin^2(\pi j\tau)}{\pi^2 j^2}\,\delta_{\{j\alpha\}}$, with an elementary proof (no continuous part, total intensity $\tau$).
-- **[S-adic structure](docs/sturmian-sadic.md)**: the Sturmian word is $\sigma_1^5 \circ \sigma_3 \circ \sigma_{29} \circ \sigma_1 \circ \sigma_3 \circ \cdots (1)$ with $\sigma_1$ the Fibonacci substitution; it imitates the Fibonacci word for exactly 32 letters, and is neither a substitution fixed point nor automatic.
+**Autocorrelation** of $\{n\alpha\}$, exact value $1 - 6f(1-f)$ with $f = \{k\alpha\}$:
 
-## 🧭 Open directions
+| lag $k$ | 1 | 2 | 3 | 5 | 8 | 13 | 21 | 34 |
+|---|---|---|---|---|---|---|---|---|
+| correlation | -0.418 | -0.076 | +0.239 | +0.533 | +0.641 | +0.876 | +0.754 | +0.872 |
 
-- Prove anything about the continued fraction of $\ln C$. Numerically it looks typical (Khinchin 2.708, Lévy 3.295, Gauss–Kuzmin frequencies, see `cedra_continued_fraction.py`), with a giant partial quotient $a_{4091} = 73\,852$, but nothing is known in general for logarithms of algebraic numbers.
-- Two dimensions: sample $(\{n\alpha\}, \{n\beta\})$ with a second constant built from the same radicals, and study its discrepancy.
+## Scope and limitations
 
-<br/>
+- **Not a random number generator.** $\{n\alpha\}$ is deterministic, strongly correlated, and its consecutive pairs lie on two lines. It must never be used for cryptography. Its very low chi-squared ($\chi^2 = 2.44$ against about 19 for random data, 20 bins) means *more regular than random*, not "more random".
+- **Not the best low-discrepancy choice.** In 1D the golden ratio is optimal and Cedra is about 5 times worse. In 2D and 4D, the Cedra Galois orbit beats random sampling but not R2 or Halton (see [higher dimensions](docs/higher-dimensions.md)).
+- **No physical claim.** "Temporal quasicrystal" refers here to a discrete-time mathematical model. The term is also used in physics for driven quantum systems, with which this work makes no connection.
+- **Context.** The results on near-periods, diffraction and S-adic structure belong to the classical theory of rotation words and model sets. The notes give self-contained proofs and explicit values for this example; they do not claim new general theorems.
+
+## Open questions
+
+- **Continued fraction of $\ln C$.** It looks typical over 11 393 partial quotients (geometric mean 2.708 against Khinchin's 2.685; $q_n^{1/n}$ = 3.295 against Lévy's 3.276), with a giant quotient $a_{4091} = 73\,852$. Nothing is known in general for logarithms of algebraic numbers.
+- **Simultaneous approximation.** Is the pair $(\ln C_1, \ln\lvert C_2\rvert)$ badly approximable? Up to $n = 2 \times 10^6$ the normalised records stay above 0.076. Almost every pair is not badly approximable (Khintchine), so a negative answer is expected, but no proof is known.
+
+## Citation
+
+```bibtex
+@misc{cedrati2025cedra,
+  author       = {Cedrati, Olivier},
+  title        = {Cedra: an irrational rotation close to the golden ratio and its quasicrystals},
+  year         = {2025},
+  howpublished = {\url{https://github.com/cedrati/cedra}},
+  note         = {Notes and code, revised November 2026}
+}
+```
 
 ## License
 
-CC BY-NC 4.0, see [LICENSE](LICENSE).
+[CC BY-NC 4.0](LICENSE). © 2025 Olivier Cedrati.
