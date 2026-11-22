@@ -1,68 +1,42 @@
 """
-Cedra Constant - Quick Start Demo
+Cedra constant: quick start.
+
 Author: Olivier Cedrati
-Year: 2025
-Description: Demonstration of the Cedra constant properties including deterministic chaos 
-             sequences, golden ratio connections, and discrete spacetime geometry.
-             
-Cedra = √3 + √2 + √(1/2) - 2 ≈ 1.853371151128520
-
-Key Features:
-- Deterministic chaos sequence with perfect uniform distribution
-- Exact golden ratio relationship via auxiliary constant Delta
-- Duality between structured chaos and pure order
-- Applications in quantum Monte Carlo, discrete time systems, and 3+1D spacetime modeling
-
 License: CC BY-NC 4.0
-Repository: https://github.com/cedrati/Cedra
+Repository: https://github.com/cedrati/cedra
+
+Shows the definition of the constant, its algebraic facts, and why the
+rotation number alpha = ln C behaves almost like 1/phi.
 """
 
-import math
+from decimal import Decimal
 
-# Define Cedra constant
-cedra = math.sqrt(3) + math.sqrt(2) + math.sqrt(1/2) - 2
-ln_cedra = math.log(cedra)
+from cedra import (ALPHA, ALPHA_DEC, CEDRA, CEDRA_DEC, INV_PHI, INV_PHI_DEC,
+                   MINIMAL_POLYNOMIAL, continued_fraction, eval_poly, kronecker)
 
-# Define Delta constant
-delta = (1 + math.sqrt(5)) / (2*math.sqrt(3) + 3*math.sqrt(2) - 4)
+print(f"C = sqrt(3) + sqrt(2) + sqrt(1/2) - 2 = {CEDRA_DEC:.30f}")
 
-# Golden ratio connection
-phi = cedra * delta
-golden_ratio = (1 + math.sqrt(5)) / 2
+# sqrt(2) + sqrt(1/2) = (3/2) sqrt(2): the definition really has three terms
+simplified = Decimal(3).sqrt() + Decimal(3) / 2 * Decimal(2).sqrt() - 2
+print(f"C = sqrt(3) + (3/2) sqrt(2) - 2      (difference: {abs(CEDRA_DEC - simplified):.1e})")
 
-print(f"Cedra = {cedra}")
-print(f"ln(Cedra) = {ln_cedra}")
-print(f"Delta = {delta}")
-print(f"Phi (Cedra * Delta) = {phi}")
-print(f"Golden Ratio = {golden_ratio}")
-print(f"Connection precision: {abs(phi - golden_ratio):.10f}")
+residual = eval_poly(MINIMAL_POLYNOMIAL, CEDRA_DEC)
+print("\nMinimal polynomial 4x^4 + 32x^3 + 36x^2 - 112x - 167")
+print(f"P(C) = {residual:.1e}  -> C is algebraic of degree 4")
 
-# DETERMINISTIC CHAOS Formula: Xn = (n × ln(Cedra)) mod 1
-def chaos_sequence(n):
-    return (n * ln_cedra) % 1
+print(f"\nalpha = ln C = {ALPHA_DEC:.30f}")
+print("C is algebraic and C != 0, 1, so ln C is transcendental (Lindemann-Weierstrass).")
+print("In particular alpha is irrational and {n alpha} is equidistributed (Weyl).")
 
-# ORDER Formula: Yn = (n - ln(Cedra)) mod 1
-def order_sequence(n):
-    return (n - ln_cedra) % 1
+print(f"\n1/phi         = {INV_PHI_DEC:.30f}")
+print(f"alpha - 1/phi = {ALPHA - INV_PHI:+.6f}")
+print(f"Continued fraction of alpha: {continued_fraction(ALPHA_DEC, 15)}")
+print(f"Continued fraction of 1/phi: {continued_fraction(INV_PHI_DEC, 15)}")
+print("alpha starts like 1/phi (six 1s), which explains the Fibonacci-lag correlations;")
+print("the later large quotients (29, 34) make it less uniform than 1/phi itself.")
 
-# Test the sequences
-print("\nCHAOS sequence (first 10 values):")
-for n in range(1, 11):
-    xn = chaos_sequence(n)
-    print(f"X{n} = {xn:.6f}")
+print("\nKronecker sequence X_n = {n ln C}, first 10 values:")
+for n, x in enumerate(kronecker(10), start=1):
+    print(f"  X{n:<2} = {x:.6f}")
 
-print(f"\nORDER sequence (constant value):")
-yn = order_sequence(1)
-print(f"Yn = {yn:.6f} (same for all n)")
-
-# Verify the duality
-print(f"\nDuality verification:")
-print(f"ln(Cedra) = {ln_cedra:.6f}")
-print(f"1 - ln(Cedra) = {1 - ln_cedra:.6f}")
-print(f"Sum = {ln_cedra + (1 - ln_cedra):.6f}")
-
-# Golden ratio relationship
-print(f"\nGolden Ratio Connection:")
-print(f"Cedra * Delta = {cedra * delta:.10f}")
-print(f"φ (exact) = {golden_ratio:.10f}")
-print(f"Perfect match: {abs(cedra * delta - golden_ratio) < 1e-15}")
+print(f"\n(float check: C = {CEDRA}, alpha = {ALPHA})")

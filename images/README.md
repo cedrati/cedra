@@ -1,18 +1,15 @@
-# Cedra Visualizations
+# Cedra visualizations
 
-This directory contains visual demonstrations of the Cedra constant's mathematical properties.
+Figures produced during the first exploration of the constant (June 2025).
 
 ## Files
 
-- `distribution.png` - Distribution of CHAOS sequence values (Xn)
-- `chaos_order.png` - Comparison between CHAOS (Xn) and ORDER (Yn) sequences  
-- `transformation_field.png` - Cedra-based linear transformation field overlay
-- `toroidal_map.png` - Phase space representation (Xn, Xn+1)
-- `unit_circle.png` - CHAOS sequence mapped on the unit circle
-
-## Usage
-
-These images are referenced in the main README.md file to illustrate Cedra's properties.
+- `Distribution.PNG`: histogram of the Kronecker sequence X_n = {n ln C}
+- `Chaos_Order.PNG`: X_n compared with (n - ln C) mod 1, which is constant because n is an integer
+- `Transformation_field.PNG`: linear transformation field based on C
+- `Toroidal_map.PNG`: pairs (X_n, X_n+1), which lie on two lines (rotation by ln C)
+- `Cedra_circle.PNG`: X_n mapped on the unit circle
 
 ```markdown
-![Distribution](./images/distribution.png)
+![Distribution](./images/Distribution.PNG)
+```
