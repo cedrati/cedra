@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-11-22: higher dimensions and README overhaul
+
+### Added
+- `docs/higher-dimensions.md`: Theorem D, linear independence of 1, ln|C_1|, ..., ln|C_4| over Q (Galois conjugates of C), proved with the totally split prime 167 and Lindemann's theorem; elementary proof in dimension 2; 2D and 4D discrepancy and simultaneous approximation measurements.
+- `cedra_multidim.py`: number theory checks and multidimensional benchmarks.
+- `cedra.py`: `CONJUGATES_DEC`, `LOG_CONJUGATES_DEC`, `kronecker_nd`, `halton`, `l2_star_discrepancy`.
+- 6 new tests (34 total).
+
+### Changed
+- README rewritten: summary table of results with status and references, background, repository layout, usage, numerical highlights, scope and limitations, open questions, citation.
+
 ## 2026-11-22: diffraction and S-adic notes
 
 ### Added

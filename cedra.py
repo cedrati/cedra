@@ -26,6 +26,16 @@ ALPHA_DEC = CEDRA_DEC.ln()          # rotation number alpha = ln C (transcendent
 INV_PHI_DEC = (_SQRT5 - 1) / 2      # 1/phi
 SQRT2_MINUS_1_DEC = _SQRT2 - 1
 
+# Galois conjugates of C: +-sqrt(3) +- (3/2) sqrt(2) - 2, in the order
+# C1 = C, C2 (sqrt(2) -> -sqrt(2)), C3 (sqrt(3) -> -sqrt(3)), C4 (both)
+CONJUGATES_DEC = (
+    _SQRT3 + 3 * _SQRT2 / 2 - 2,
+    _SQRT3 - 3 * _SQRT2 / 2 - 2,
+    -_SQRT3 + 3 * _SQRT2 / 2 - 2,
+    -_SQRT3 - 3 * _SQRT2 / 2 - 2,
+)
+LOG_CONJUGATES_DEC = tuple(abs(c).ln() for c in CONJUGATES_DEC)
+
 CEDRA = float(CEDRA_DEC)
 ALPHA = float(ALPHA_DEC)
 INV_PHI = float(INV_PHI_DEC)
@@ -165,6 +175,36 @@ def sadic_word(length, alpha=ALPHA_DEC):
         if len(word) >= length:
             return word[:length]
     raise ValueError("not enough partial quotients for this length")
+
+
+def kronecker_nd(n_points, alphas, start=1):
+    """Multidimensional Kronecker sequence ({n a_1}, ..., {n a_d})."""
+    alphas = [Decimal(a) for a in alphas]
+    return [tuple(float(frac(n * a)) for a in alphas)
+            for n in range(start, start + n_points)]
+
+
+def halton(n_points, bases=(2, 3)):
+    """Halton sequence (radical inverses in coprime bases), n = 1..n_points."""
+    def radical_inverse(n, b):
+        value, denom = 0.0, 1
+        while n:
+            n, digit = divmod(n, b)
+            denom *= b
+            value += digit / denom
+        return value
+    return [tuple(radical_inverse(n, b) for b in bases) for n in range(1, n_points + 1)]
+
+
+def l2_star_discrepancy(points):
+    """Exact L2 star discrepancy in [0, 1]^d (Warnock's formula, O(N^2 d))."""
+    n, d = len(points), len(points[0])
+    s1 = sum(math.prod(1 - x * x for x in p) for p in points)
+    s2 = 0.0
+    for p in points:
+        for q in points:
+            s2 += math.prod(1 - max(u, v) for u, v in zip(p, q))
+    return math.sqrt(3.0 ** -d - 2.0 ** (1 - d) * s1 / n + s2 / (n * n))
 
 
 def factor_complexity(word, k):
